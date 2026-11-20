@@ -1,42 +1,46 @@
-import streamlit as st
-from src.bot import DepartmentChatbot
+import sys
+from pathlib import Path
 
-st.set_page_config(
-    page_title="Department AI Chatbot",
-    page_icon="🎓",
-    layout="centered"
-)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-st.title("🎓 Department Assistant")
-st.caption("Course Project for IE624 - Interactive Department Q&A Chatbot")
+import streamlit as st  # noqa: E402
 
-# Initialize chatbot and session state
-if "chatbot" not in st.session_state:
-    st.session_state.chatbot = DepartmentChatbot()
+from src.bot import DepartmentChatbot  # noqa: E402
+
+st.set_page_config(page_title="SysCon Assistant", page_icon="🎓", layout="centered")
+st.title("🎓 SysCon Assistant")
+st.caption("Centre for Systems and Control, IIT Bombay · answers from the department website, with sources")
+
+
+@st.cache_resource(show_spinner="Loading models (first time only)...")
+def load_bot() -> DepartmentChatbot:
+    return DepartmentChatbot()
+
+
+bot = load_bot()
 
 if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am your Department Assistant. Ask me about courses, faculty, schedules, or department policies."}
-    ]
+    st.session_state.messages = [{
+        "role": "assistant",
+        "content": "Hello! Ask me about SysCon courses, faculty, admissions, forms or department rules.",
+    }]
 
-# Display conversation history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
 
-# Chat input
-if prompt := st.chat_input("Ask a question about the department..."):
-    # Add user message to history
+if prompt := st.chat_input("Ask a question about SysCon..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-
-    # Generate bot response
     with st.chat_message("assistant"):
-        response = st.session_state.chatbot.respond(
-            query=prompt,
-            history=st.session_state.messages[:-1]
-        )
-        st.markdown(response)
+        stream = bot.respond_stream(prompt, history=st.session_state.messages[1:-1])
+        with st.spinner("Thinking..."):
+            first = next(stream, "")
 
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        def rest():
+            yield first
+            yield from stream
+
+        reply = st.write_stream(rest())
+    st.session_state.messages.append({"role": "assistant", "content": reply})
