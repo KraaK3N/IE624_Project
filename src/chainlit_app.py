@@ -1,7 +1,4 @@
-"""SysBot chat UI (Chainlit).
-
-    python -m chainlit run src/chainlit_app.py
-"""
+"""Chainlit entry point for SysBot. See README.md for setup and launch."""
 
 import asyncio
 import sys

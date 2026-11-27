@@ -15,7 +15,7 @@ from src.retriever import Hit, Retriever
 
 SITE = "https://www.sc.iitb.ac.in/"
 NO_INFO = (
-    "I don't have that information in the SysCon website content. "
+    "I don't have that information in the SysBot knowledge base. "
     f"Please check {SITE} or contact the SysCon office."
 )
 

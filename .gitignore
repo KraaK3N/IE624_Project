@@ -6,6 +6,7 @@ __pycache__/
 # Virtual environments
 venv/
 .venv/
+.venv313/
 env/
 ENV/
 
@@ -20,11 +21,21 @@ faiss_index/
 *.index
 *.sqlite3
 
-# Data (keep raw templates if needed, ignore large datasets)
+# Generated data and local builds
 data/processed/*
 !data/processed/.gitkeep
+data/builds/
+data/crawler/
+data/evaluation/
 data/raw/*
 !data/raw/.gitkeep
+
+# Local assistant tooling and report exports
+/.agents/
+/.claude/
+/.files/
+/SysBot/
+/SysBot.zip
 
 # Logs and debug files
 *.log

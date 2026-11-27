@@ -8,7 +8,6 @@ Modes (for the ablation study): dense | bm25 | hybrid, each with or without rera
 """
 
 import argparse
-import json
 import math
 import re
 from dataclasses import dataclass, field
@@ -19,6 +18,7 @@ from rank_bm25 import BM25Okapi
 from sentence_transformers import CrossEncoder, SentenceTransformer
 
 from src.config import CHUNKS_PATH, COLLECTION_NAME, DEVICE, RERANKER_MODEL, VECTOR_STORE_PATH
+from src.index_artifacts import read_chunks, verify_index
 
 RRF_K = 60
 STOPWORDS = set(
@@ -56,15 +56,19 @@ class Hit:
 class Retriever:
     def __init__(self, reranker_model: str = RERANKER_MODEL, device: str = DEVICE, load_reranker: bool = True):
         device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.col = chromadb.PersistentClient(path=str(VECTOR_STORE_PATH)).get_collection(COLLECTION_NAME)
+        self.chunks, chunks_hash = read_chunks(CHUNKS_PATH)
+        if not (VECTOR_STORE_PATH / "chroma.sqlite3").is_file():
+            raise FileNotFoundError(f"Chroma database is missing from {VECTOR_STORE_PATH}")
+        client = chromadb.PersistentClient(
+            path=str(VECTOR_STORE_PATH), settings=chromadb.Settings(anonymized_telemetry=False),
+        )
+        self.col = client.get_collection(COLLECTION_NAME)
+        verify_index(self.col, self.chunks, chunks_hash)
         cmeta = self.col.metadata or {}
         self.query_instruction = cmeta.get("query_instruction", "")
         self.embedder = SentenceTransformer(cmeta["embedding_model"], device=device)
         self.reranker = CrossEncoder(reranker_model, max_length=512, device=device) if load_reranker else None
 
-        self.chunks = [json.loads(l) for l in CHUNKS_PATH.read_text(encoding="utf-8").splitlines() if l.strip()]
-        indexed = set(self.col.get(include=[])["ids"])
-        self.chunks = [c for c in self.chunks if c["id"] in indexed]
         self.by_id = {c["id"]: c for c in self.chunks}
         self.bm25 = BM25Okapi([bm25_tokens(c["embed_text"]) for c in self.chunks])
 

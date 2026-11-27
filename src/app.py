@@ -9,7 +9,7 @@ from src.bot import DepartmentChatbot  # noqa: E402
 
 st.set_page_config(page_title="SysCon Assistant", page_icon="🎓", layout="centered")
 st.title("🎓 SysCon Assistant")
-st.caption("Centre for Systems and Control, IIT Bombay · answers from the department website, with sources")
+st.caption("Centre for Systems and Control, IIT Bombay · answers with links to department sources")
 
 
 @st.cache_resource(show_spinner="Loading models (first time only)...")
