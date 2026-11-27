@@ -1,6 +1,6 @@
 # SysBot
 
-SysBot answers questions about the Centre for Systems and Control at IIT Bombay and cites its sources. It searches a local Chroma index and a BM25 index, then reranks the results before generating an answer.
+SysBot is a retrieval-augmented assistant for the Centre for Systems and Control at IIT Bombay. A router handles small talk and rewrites follow-up questions for search. For department questions, SysBot combines dense ChromaDB retrieval with BM25 using reciprocal rank fusion, then uses a cross-encoder to rerank the results before generating a cited answer. Chainlit is the primary interface.
 
 ## Quick start
 
@@ -56,4 +56,6 @@ A local source with the same normalized URL replaces the corresponding baseline 
 
 ## Evaluation
 
-See the [evaluation guide](evaluation/README.md), [recorded results](evaluation/RESULTS.md), and [project report](report/SysBot.pdf).
+The course presentation evaluated **25 questions** (20 answerable and 5 unanswerable) on a crawl snapshot with 271 documents and 8,248 chunks. On the 20 answerable questions, hybrid retrieval with reranking achieved **95% Hit@1, 100% Hit@5, and 0.975 MRR@10**. The two final Llama 3.1 8B runs scored **88–92% overall correctness**. Both declined all five unanswerable questions. [Course presentation](report/presentation.pdf#page=12) · [Presented results](evaluation/RESULTS.md)
+
+The repository ships a separate 60-question fixture for testing the current code. [Evaluation guide](evaluation/README.md)

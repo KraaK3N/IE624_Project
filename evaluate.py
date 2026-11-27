@@ -177,7 +177,8 @@ def grade_run(answers_path: Path, grades_path: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=["retrieval", "answers", "grade"], help="evaluation to run")
-    parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS)
+    parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS,
+                        help="question JSONL file (defaults to the bundled 60-question development fixture)")
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--answers", type=Path, help="answer run JSONL for grade mode")
     parser.add_argument("--grades", type=Path, help="reviewer grades JSONL for grade mode")
